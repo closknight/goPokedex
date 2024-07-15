@@ -8,10 +8,15 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
-func commandHelp() error {
+type config struct {
+	next *string
+	prev *string
+}
+
+func commandHelp(config *config) error {
 	fmt.Println()
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
@@ -23,7 +28,7 @@ func commandHelp() error {
 	return nil
 }
 
-func commandExit() error {
+func commandExit(config *config) error {
 	os.Exit(0)
 	return nil
 }
@@ -39,6 +44,16 @@ func getCommands() map[string]cliCommand {
 			name:        "exit",
 			description: "ends program",
 			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "gives the next 20 locations of the pokemon world",
+			callback:    CommandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "gives the previous 20 locations of the pokemon world",
+			callback:    CommandMapb,
 		},
 	}
 }
