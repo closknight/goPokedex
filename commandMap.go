@@ -1,34 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-)
 
-const LOCATION_WEBPAGE = "https://pokeapi.co/api/v2/location"
+	"github.com/closknight/goPokedex/internal/pokeapi"
+)
 
 func CommandMap(config *config) error {
 	if config.next == nil && config.prev != nil {
 		return errors.New("no more locations")
 	}
-
-	webpage := LOCATION_WEBPAGE
-	if config.next != nil {
-		webpage = *config.next
+	if config.next == nil {
+		config.next = new(string)
+		*config.next = pokeapi.GetLocationsURL()
 	}
 
-	locationsRes, err := getLocations(webpage)
-	if err != nil {
-		return err
+	data, isStored := config.cache.Get(*config.next)
+	var locationsRes pokeapi.LocationsResponse
+	if isStored {
+		err := json.Unmarshal(data, &locationsRes)
+		if err != nil {
+			return nil
+		}
+	} else {
+		resp, err := pokeapi.GetLocations(config.next)
+		if err != nil {
+			return err
+		}
+		data, err := json.Marshal(resp)
+		if err != nil {
+			return err
+		}
+		config.cache.Add(*config.next, data)
+		locationsRes = resp
 	}
-
 	config.next = locationsRes.Next
 	config.prev = locationsRes.Previous
 
 	for _, loc := range locationsRes.Results {
 		fmt.Println(loc.Name)
 	}
-	fmt.Println()
 	return nil
 }
 
@@ -36,9 +49,25 @@ func CommandMapb(config *config) error {
 	if config.prev == nil {
 		return errors.New("no previous locations")
 	}
-	locationsRes, err := getLocations(*config.prev)
-	if err != nil {
-		return err
+
+	var locationsRes pokeapi.LocationsResponse
+	data, isStored := config.cache.Get(*config.prev)
+	if isStored {
+		err := json.Unmarshal(data, &locationsRes)
+		if err != nil {
+			return err
+		}
+	} else {
+		resp, err := pokeapi.GetLocations(config.prev)
+		if err != nil {
+			return err
+		}
+		data, err := json.Marshal(resp)
+		if err != nil {
+			return err
+		}
+		config.cache.Add(*config.prev, data)
+		locationsRes = resp
 	}
 
 	config.next = locationsRes.Next
@@ -47,6 +76,5 @@ func CommandMapb(config *config) error {
 	for _, loc := range locationsRes.Results {
 		fmt.Println(loc.Name)
 	}
-	fmt.Println()
 	return nil
 }

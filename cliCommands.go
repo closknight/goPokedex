@@ -11,11 +11,6 @@ type cliCommand struct {
 	callback    func(*config) error
 }
 
-type config struct {
-	next *string
-	prev *string
-}
-
 func commandHelp(config *config) error {
 	fmt.Println()
 	fmt.Println("Welcome to the Pokedex!")

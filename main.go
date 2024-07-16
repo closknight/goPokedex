@@ -5,7 +5,16 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/closknight/goPokedex/internal/pokecache"
 )
+
+type config struct {
+	next  *string
+	prev  *string
+	cache pokecache.Cache
+}
 
 func parse(text string) []string {
 	text = strings.ToLower(text)
@@ -15,7 +24,13 @@ func parse(text string) []string {
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommands()
-	config := config{next: nil, prev: nil}
+	cacheInterval := 5 * time.Minute
+
+	config := config{
+		next:  nil,
+		prev:  nil,
+		cache: pokecache.NewCache(cacheInterval),
+	}
 
 	for {
 		fmt.Printf("Pokedex > ")
