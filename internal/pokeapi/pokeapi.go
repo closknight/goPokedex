@@ -7,10 +7,25 @@ import (
 	"net/http"
 )
 
-const baseURL = "https://pokeapi.co/api/v2"
-
-func GetLocationsURL() string {
-	return baseURL + "/location-area"
+func GetPokemon(url string) (PokemonResponse, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		return PokemonResponse{}, err
+	}
+	body, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return PokemonResponse{}, err
+	}
+	if res.StatusCode > 299 {
+		return PokemonResponse{}, fmt.Errorf("network error:\n status code: %v\n body- %s", res.StatusCode, string(body))
+	}
+	pokemonResp := PokemonResponse{}
+	err = json.Unmarshal(body, &pokemonResp)
+	if err != nil {
+		return PokemonResponse{}, err
+	}
+	return pokemonResp, nil
 }
 
 func GetLocations(url string) (LocationsResponse, error) {

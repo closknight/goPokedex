@@ -11,9 +11,10 @@ import (
 )
 
 type config struct {
-	next   *string
-	prev   *string
-	client client.Client
+	next    *string
+	prev    *string
+	client  client.Client
+	pokemon map[string]Pokemon
 }
 
 func parse(text string) []string {
@@ -27,9 +28,10 @@ func main() {
 	cacheInterval := 5 * time.Minute
 
 	config := config{
-		next:   nil,
-		prev:   nil,
-		client: client.NewClient(cacheInterval),
+		next:    nil,
+		prev:    nil,
+		client:  client.NewClient(cacheInterval),
+		pokemon: make(map[string]Pokemon),
 	}
 
 	for {

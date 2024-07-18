@@ -69,3 +69,26 @@ func (c Client) GetLocation(name string) (pokeapi.ExploreResponse, error) {
 	c.cache.Add(url, data)
 	return exploreResponse, nil
 }
+
+func (c Client) GetPokemon(name string) (pokeapi.PokemonResponse, error) {
+	url := baseURL + "/pokemon/" + name
+
+	if data, ok := c.cache.Get(url); ok {
+		pokeResp := pokeapi.PokemonResponse{}
+		err := json.Unmarshal(data, &pokeResp)
+		if err != nil {
+			return pokeapi.PokemonResponse{}, err
+		}
+		return pokeResp, nil
+	}
+	pokeResp, err := pokeapi.GetPokemon(url)
+	if err != nil {
+		return pokeapi.PokemonResponse{}, err
+	}
+	data, err := json.Marshal(pokeResp)
+	if err != nil {
+		return pokeapi.PokemonResponse{}, err
+	}
+	c.cache.Add(url, data)
+	return pokeResp, nil
+}
