@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/closknight/goPokedex/internal/pokecache"
+	"github.com/closknight/goPokedex/internal/client"
 )
 
 type config struct {
-	next  *string
-	prev  *string
-	cache pokecache.Cache
+	next   *string
+	prev   *string
+	client client.Client
 }
 
 func parse(text string) []string {
@@ -27,9 +27,9 @@ func main() {
 	cacheInterval := 5 * time.Minute
 
 	config := config{
-		next:  nil,
-		prev:  nil,
-		cache: pokecache.NewCache(cacheInterval),
+		next:   nil,
+		prev:   nil,
+		client: client.NewClient(cacheInterval),
 	}
 
 	for {
@@ -41,9 +41,10 @@ func main() {
 		}
 
 		cmdName := tokens[0]
+		args := tokens[1:]
 		command, exists := commands[cmdName]
 		if exists {
-			err := command.callback(&config)
+			err := command.callback(&config, args...)
 			if err != nil {
 				fmt.Println(err)
 			}

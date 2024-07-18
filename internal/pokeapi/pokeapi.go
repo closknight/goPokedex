@@ -9,25 +9,11 @@ import (
 
 const baseURL = "https://pokeapi.co/api/v2"
 
-type LocationsResponse struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
 func GetLocationsURL() string {
 	return baseURL + "/location-area"
 }
 
-func GetLocations(webpage *string) (LocationsResponse, error) {
-	url := baseURL + "/location-area"
-	if webpage != nil {
-		url = *webpage
-	}
+func GetLocations(url string) (LocationsResponse, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return LocationsResponse{}, err
@@ -47,4 +33,27 @@ func GetLocations(webpage *string) (LocationsResponse, error) {
 		return LocationsResponse{}, err
 	}
 	return responseJson, nil
+}
+
+func GetExploreLocation(url string) (ExploreResponse, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		return ExploreResponse{}, err
+	}
+
+	body, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	if err != nil {
+		return ExploreResponse{}, err
+	}
+	if res.StatusCode > 299 {
+		return ExploreResponse{}, fmt.Errorf("network error:\n status code: %v\n body- %s", res.StatusCode, string(body))
+	}
+	exploreResp := ExploreResponse{}
+	err = json.Unmarshal(body, &exploreResp)
+	if err != nil {
+		return ExploreResponse{}, err
+	}
+	return exploreResp, nil
 }
